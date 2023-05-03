@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 
 public class Main {
     public static void main(String[] args) {
+        final String topic1 = "unique";
         PubSubService pubSub = new PubSubService();
         ExecutorService executor = Executors.newFixedThreadPool(3);
         Runnable publish = () -> {
@@ -23,9 +24,12 @@ public class Main {
         };
 
         Runnable receive = () -> {
-            Subscriber subscriber = new SubscriberImpl();
+            Subscriber subscriber1 = new SubscriberImpl();
+            Subscriber subscriber2 = new SubscriberImpl();
+            subscriber1.subscribe(pubSub, topic1);
+            subscriber2.subscribe(pubSub, topic1);
             for (int i = 0; i < 20; ++i) {
-                pubSub.receive(subscriber);
+                pubSub.receive();
             }
         };
 

@@ -7,7 +7,7 @@ import java.util.*;
 
 public class PubSubService {
     private final Queue<Message> messages = new LinkedList<>();
-
+    private final Map<String, Set<Subscriber>> topicToSubscribers = new HashMap<>();
     public void publish(Message message) {
         synchronized (this) {
             while (messages.size() >= 5) {
@@ -26,7 +26,7 @@ public class PubSubService {
     }
 
     // TODO devide subscribers by topics
-    public void receive(Subscriber subscriber) {
+    public void receive() {
         synchronized (this) {
             while (messages.size() < 1) {
                 try {
@@ -36,9 +36,22 @@ public class PubSubService {
                 }
             }
             Message message = messages.poll();
-            subscriber.getMessage(message);
+            String topic = message.getTopic();
+            Set<Subscriber> topicSubscribers = topicToSubscribers.get(topic);
+            topicSubscribers.forEach(
+                    sub -> sub.getMessage(message)
+            );
             notify();
         }
     }
 
+    public void addSubscriber(String topic, Subscriber subscriber) {
+        if (topicToSubscribers.get(topic) == null) {
+            Set<Subscriber> curSet = new HashSet<>();
+            curSet.add(subscriber);
+            topicToSubscribers.put(topic, curSet);
+        }
+        else
+            topicToSubscribers.get(topic).add(subscriber);
+    }
 }
